@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators import DummyOperator, FetchAPIOperator
+from airflow.operators import DummyOperator
+from airflow.operators.etl_plugin import FetchAPIOperator
 
 default_args = {
     'owner': 'mariano',
