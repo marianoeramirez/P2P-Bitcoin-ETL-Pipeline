@@ -1,5 +1,7 @@
-from .fetch_api import FetchAPIOperator
+from .data_quality import DataQualityOperator
+from .create_table import CreateTableOperator
 
 __all__ = [
-    'FetchAPIOperator'
+    'DataQualityOperator',
+    'CreateTableOperator'
 ]

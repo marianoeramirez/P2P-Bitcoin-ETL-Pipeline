@@ -4,10 +4,11 @@ from . import operators
 from . import helpers
 
 
-class ETLPlugin(AirflowPlugin):
-    name = "etl_plugin"
+class UdacityPlugin(AirflowPlugin):
+    name = "udacity_plugin"
     operators = [
-        operators.FetchAPIOperator
+        operators.DataQualityOperator,
+        operators.CreateTableOperator
     ]
     helpers = [
         helpers.SqlQueries
