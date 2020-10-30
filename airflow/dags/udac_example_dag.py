@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators import ( CreateTableOperator, FetchApiOperator)
+from airflow.operators import (CreateTableOperator, FetchApiOperator)
 from airflow.operators.dummy_operator import DummyOperator
 
 from helpers import SqlQueries
 
-s3_bucket = 'udacity-dend'
+s3_bucket = 'dataengineer-udacity'
+
 song_s3_key = "song_data"
 log_s3_key = "log_data"
 log_json_file = "log_json_path.json"
@@ -28,15 +29,13 @@ dag = DAG('udac_example_dag',
           schedule_interval='0 * * * *'
           )
 
-fetch_api = FetchApiOperator(task_id="fetch_api", dag=dag,aws_con="aws_con",
-        aws_key="test.json",
-        aws_bucket_name="dataengineer-udacity")
+fetch_api_bisq = FetchApiOperator(task_id="fetch_api_bisq", dag=dag, aws_con="aws_con",
+                                  remote_provider="bisq", aws_bucket_name=s3_bucket)
+fetch_api_paxful = FetchApiOperator(task_id="fetch_api_paxful", dag=dag, aws_con="aws_con",
+                                    remote_provider="paxful", aws_bucket_name=s3_bucket)
+
 create_table = CreateTableOperator(task_id="Create_table", dag=dag, conn_id="redshift")
-
-
 
 start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
 
-
-start_operator >> fetch_api >> create_table
-
+start_operator >> [fetch_api_bisq, fetch_api_paxful] >> create_table
