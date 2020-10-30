@@ -48,16 +48,15 @@ class FetchApiOperator(BaseOperator):
 
         if url is not None:
             response = requests.request("GET", url)
-            self.log.info(f"URL: {url}")
+            self.log.info(f"URL: {url}, count: {count}")
             self.log.info(f"Status code: {response.status_code}")
             data = response.json()
             if self.remote_provider == "bisq":
                 self.data += data
             elif self.remote_provider == "paxful":
                 self.data += list(x for x in data if int(x["date"]) < self.end)
-            if len(data) > 0:
-                self.start = self.data[0]["date"]
-                if len(data) >= pagination:
-                    self.fetch_url( count+1)
 
-
+            if len(data) > 0 and len(data) >= pagination:
+                self.start = int(self.data[0]["date"]) \
+                    if self.remote_provider == "paxful" else self.data[0]["trade_date"]
+                self.fetch_url(count + 1)
