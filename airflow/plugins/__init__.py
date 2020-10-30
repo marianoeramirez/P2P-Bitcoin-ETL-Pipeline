@@ -7,6 +7,7 @@ from . import helpers
 class UdacityPlugin(AirflowPlugin):
     name = "udacity_plugin"
     operators = [
+        operators.FetchApiOperator,
         operators.DataQualityOperator,
         operators.CreateTableOperator
     ]
