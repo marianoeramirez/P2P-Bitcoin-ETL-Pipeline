@@ -25,5 +25,5 @@ class FetchApiOperator(BaseOperator):
         filename = '/tmp/bisq.json'
         open(filename, 'wb').write(response.content)
 
-        hook = S3_hook.S3Hook(self.aws_conn)
+        hook = S3_hook.S3Hook(self.aws_con)
         hook.load_file(filename, self.aws_key, self.aws_bucket_name)

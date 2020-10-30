@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators import ( CreateTableOperator)
+from airflow.operators import ( CreateTableOperator, FetchApiOperator)
 from airflow.operators.dummy_operator import DummyOperator
 
 from helpers import SqlQueries
@@ -14,7 +14,7 @@ log_json_file = "log_json_path.json"
 default_args = {
     'owner': 'udacity',
     'depends_on_past': True,
-    'start_date': datetime(2021, 1, 12),
+    'start_date': datetime(2020, 10, 29),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -28,10 +28,15 @@ dag = DAG('udac_example_dag',
           schedule_interval='0 * * * *'
           )
 
+fetch_api = FetchApiOperator(task_id="fetch_api", dag=dag,aws_con="aws_con",
+        aws_key="test.json",
+        aws_bucket_name="dataengineer-udacity")
 create_table = CreateTableOperator(task_id="Create_table", dag=dag, conn_id="redshift")
 
 
 
 start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
 
-create_table >> start_operator
+
+start_operator >> fetch_api >> create_table
+
