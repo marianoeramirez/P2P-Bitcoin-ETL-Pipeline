@@ -94,7 +94,8 @@ run_quality_checks = DataQualityOperator(
     dag=dag,
     conn_id="redshift",
     tables=["transaction"],
-    tables_with_rows=["currency", "time", ]
+    tables_with_rows=["currency", "time", ],
+    aws_con=aws_credentials, aws_bucket_name=s3_bucket
 )
 
 start_operator >> create_table >> [fetch_api_bisq, fetch_api_paxful]
