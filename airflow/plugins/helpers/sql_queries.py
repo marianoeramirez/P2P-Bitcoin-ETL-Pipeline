@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.transaction (
 CREATE TABLE IF NOT EXISTS public.staging_currency (
 	id int4 NOT null IDENTITY(0,1),
 	name varchar(256),
-	CONSTRAINT currency_pkey PRIMARY KEY (id)
+	CONSTRAINT staging_currency_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS public.currency (
