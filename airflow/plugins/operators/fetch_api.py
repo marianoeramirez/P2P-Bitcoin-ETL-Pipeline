@@ -27,12 +27,17 @@ class FetchApiOperator(BaseOperator):
         self.end = int((datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)).timestamp())
         self.data = []
         filename = f"{self.remote_provider}({context['ds']}).json"
+        hook = S3_hook.S3Hook(self.aws_con)
 
-        self.fetch_url()
+        if not hook.check_for_key(filename, self.aws_bucket_name):
+            self.log.info(f"File not exists")
+            self.fetch_url()
+        else:
+            self.log.info(f"File already exists")
 
         open('/tmp/' + filename, 'w').write(json.dumps(self.data))
 
-        hook = S3_hook.S3Hook(self.aws_con)
+
         hook.load_file('/tmp/' + filename, filename, self.aws_bucket_name)
 
     def fetch_url(self, count=0):
@@ -58,6 +63,7 @@ class FetchApiOperator(BaseOperator):
 
             self.data += data
 
+            self.log.info(f"Number returned: {len(self.data)}")
             if len(data) > 0 and len(data) >= pagination:
                 if self.remote_provider == "paxful":
                     self.start = int(max(self.data, key=lambda x: x['date']))
