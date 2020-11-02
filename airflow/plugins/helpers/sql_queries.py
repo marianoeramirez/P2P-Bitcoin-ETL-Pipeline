@@ -88,7 +88,8 @@ CREATE TABLE IF NOT EXISTS public.currency (
     bisq_staging_currency_table_insert = """insert into staging_currency (name)
     SELECT
        distinct SPLIT_PART(sb.market,  '_', 1)
-    from staging_bisq sb union where [filter]
+    from staging_bisq sb  where [filter]
+    UNION
     SELECT
        distinct  SPLIT_PART(sb.market,  '_', 2)
     from staging_bisq sb  where [filter];
