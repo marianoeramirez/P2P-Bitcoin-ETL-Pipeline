@@ -30,7 +30,7 @@ class FetchApiOperator(BaseOperator):
 
         self.fetch_url()
 
-        open('/tmp/' + filename, 'wb').write(json.dumps(self.data))
+        open('/tmp/' + filename, 'w').write(json.dumps(self.data))
 
         hook = S3_hook.S3Hook(self.aws_con)
         hook.load_file('/tmp/' + filename, filename, self.aws_bucket_name)
@@ -38,6 +38,7 @@ class FetchApiOperator(BaseOperator):
     def fetch_url(self, count=0):
         url = None
         pagination = 0
+        self.log.info(f"Start: {self.start}, End: {self.end}")
         if self.remote_provider == "bisq":
             url = f"https://bisq.markets/api/trades?market=all&" \
                   f"timestamp_from={self.start}&timestamp_to={self.end}&limit=2000"
@@ -51,12 +52,15 @@ class FetchApiOperator(BaseOperator):
             self.log.info(f"URL: {url}, count: {count}")
             self.log.info(f"Status code: {response.status_code}")
             data = response.json()
-            if self.remote_provider == "bisq":
-                self.data += data
-            elif self.remote_provider == "paxful":
-                self.data += list(x for x in data if int(x["date"]) < self.end)
+
+            if self.remote_provider == "paxful":
+                data = list(x for x in data if int(x["date"]) < self.end)
+
+            self.data += data
 
             if len(data) > 0 and len(data) >= pagination:
-                self.start = int(self.data[0]["date"]) \
-                    if self.remote_provider == "paxful" else self.data[0]["trade_date"]
+                if self.remote_provider == "paxful":
+                    self.start = int(max(self.data, key=lambda x: x['date']))
+                else:
+                    self.start = self.data[0]["trade_date"]
                 self.fetch_url(count + 1)
