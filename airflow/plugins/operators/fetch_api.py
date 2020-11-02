@@ -32,13 +32,10 @@ class FetchApiOperator(BaseOperator):
         if not hook.check_for_key(filename, self.aws_bucket_name):
             self.log.info(f"File not exists")
             self.fetch_url()
+            open('/tmp/' + filename, 'w').write(json.dumps(self.data))
+            hook.load_file('/tmp/' + filename, filename, self.aws_bucket_name)
         else:
             self.log.info(f"File already exists")
-
-        open('/tmp/' + filename, 'w').write(json.dumps(self.data))
-
-
-        hook.load_file('/tmp/' + filename, filename, self.aws_bucket_name)
 
     def fetch_url(self, count=0):
         url = None

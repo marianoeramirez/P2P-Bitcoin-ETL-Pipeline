@@ -34,7 +34,8 @@ fetch_api_bisq = FetchApiOperator(task_id="fetch_api_bisq", dag=dag, aws_con="aw
 fetch_api_paxful = FetchApiOperator(task_id="fetch_api_paxful", dag=dag, aws_con="aws_con",
                                     remote_provider="paxful", aws_bucket_name=s3_bucket)
 
-create_table = CreateTableOperator(task_id="Create_table", dag=dag, conn_id="redshift")
+create_table = CreateTableOperator(task_id="Create_table", dag=dag, conn_id="redshift",
+                                   sql_query=SqlQueries.create_table)
 
 start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
 

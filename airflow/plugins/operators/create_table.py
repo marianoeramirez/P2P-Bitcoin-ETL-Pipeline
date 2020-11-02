@@ -9,13 +9,13 @@ class CreateTableOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  conn_id: str = "",
+                 sql_query: str = "",
                  *args, **kwargs):
         super(CreateTableOperator, self).__init__(*args, **kwargs)
         self.conn_id = conn_id
+        self.sql_query = sql_query
 
     def execute(self, context):
         redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
-        query = open("/home/workspace/airflow/create_tables.sql").read()
-
-        redshift_hook.run(query)
+        redshift_hook.run(self.sql_query)
         self.log.info(f"Create Table ready!")

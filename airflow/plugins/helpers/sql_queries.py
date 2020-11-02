@@ -1,4 +1,73 @@
 class SqlQueries:
+    create_table = ("""
+        
+CREATE TABLE IF NOT EXISTS public.staging_bisq (
+	price decimal(16, 8),
+	amount decimal(16, 8),
+	volume decimal(16, 8),
+	payment_method varchar(100),
+	trade_date BIGINT,
+	market varchar(100),
+);
+
+CREATE TABLE IF NOT EXISTS public.staging_paxful (
+	id BIGINT,
+	date BIGINT,
+	amount decimal(16, 8),
+	price decimal(16, 8),
+	payment_method varchar(255),
+	payment_method_group varchar(255),
+	currency varchar(20),
+	type varchar(50),
+	advertiser_cc varchar(20),
+	user_cc varchar(20),
+	crypto_rate_usd decimal(16, 8),
+	crypto_code varchar(100),
+);
+
+CREATE TABLE IF NOT EXISTS public.transaction (
+	id varchar(32) NOT NULL,
+	date timestamp NOT NULL,
+	price decimal(16, 8),
+	amount decimal(16, 8),
+	payment_method varchar(255),
+	currency_id int,
+	crypto_id int,
+    type varchar(10)
+	CONSTRAINT transaction_pkey PRIMARY KEY (id)
+);
+
+
+CREATE TABLE IF NOT EXISTS public."time" (
+	date timestamp NOT NULL,
+	"hour" int4,
+	"day" int4,
+	week int4,
+	"month" varchar(256),
+	"year" int4,
+	weekday varchar(256),
+	CONSTRAINT time_pkey PRIMARY KEY (date)
+);
+
+CREATE TABLE IF NOT EXISTS public.provider (
+	id int4 NOT NULL,
+	name varchar(256),
+	CONSTRAINT provider_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.currency (
+	id int4 NOT NULL,
+	name varchar(256),
+	CONSTRAINT provider_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.crypto (
+	id int4 NOT NULL,
+	name varchar(256),
+	CONSTRAINT provider_pkey PRIMARY KEY (id)
+);
+
+    """)
     songplay_table_insert = ("""
         SELECT
                 md5(events.sessionid || events.start_time) songplay_id,
