@@ -36,7 +36,6 @@ class DataQualityOperator(BaseOperator):
         self.start = datetime.strptime(context["ds"], "%Y-%m-%d")
         self.end = datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)
         filter_query = self.query_format.format(start=self.start.strftime("%Y-%m-%d"), end=self.end.strftime("%Y-%m-%d"))
-        self.log.info(f"Filter query {filter_query}")
         remote_providers = ["bisq", "paxful"]
         total = 0
         for provider in remote_providers:
@@ -51,7 +50,7 @@ class DataQualityOperator(BaseOperator):
 
             if len(records) < 1 or records[0][0] != total:
                 self.log.error(f"Data quality failed for table : {table}. count {records[0][0]}, total file:{total}")
-                failted_tests.append(f"SELECT count(*) FROM {table};")
+                failted_tests.append(f"SELECT count(*) FROM {table} where {filter_query} ;")
             else:
                 self.log.info(f"Data quality Passed on table : {table}!!!")
 
@@ -61,7 +60,7 @@ class DataQualityOperator(BaseOperator):
 
             if len(records) < 1 or records[0][0] < 1:
                 self.log.error(f"Data quality failed for table : {table}. count {records[0][0]}, total file:{total}")
-                failted_tests.append(f"SELECT count(*) FROM {table};")
+                failted_tests.append(f"SELECT count(*) FROM {table} where {filter_query} ;")
             else:
                 self.log.info(f"Data quality Passed on table : {table}!!!")
 

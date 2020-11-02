@@ -27,7 +27,7 @@ class LoadTableOperator(BaseOperator):
     def execute(self, context):
         redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
         self.start = int(datetime.strptime(context["ds"], "%Y-%m-%d").timestamp())
-        self.end = int((datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)).timestamp()) * 1000
+        self.end = int((datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)).timestamp())
 
         self.log.info(f"Filter by")
         filter_bisq = self.query_format.format(date_column="trade_date", start=self.start * 1000, end=self.end * 1000)
