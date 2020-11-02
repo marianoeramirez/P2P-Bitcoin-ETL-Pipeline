@@ -57,6 +57,7 @@ class FetchApiOperator(BaseOperator):
             self.log.info(f"URL: {url}, count: {count}")
             self.log.info(f"Status code: {response.status_code}")
             data = response.json()
+            self.log.info(str(response.content))
 
             if self.remote_provider == "paxful":
                 data = list(x for x in data if int(x["date"]) < self.end)
