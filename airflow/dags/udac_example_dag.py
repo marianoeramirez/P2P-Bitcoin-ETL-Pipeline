@@ -16,7 +16,7 @@ aws_credentials = "aws_con"
 default_args = {
     'owner': 'udacity',
     'depends_on_past': True,
-    'start_date': datetime(2020, 10, 29),
+    'start_date': datetime(2020, 10, 20),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
