@@ -33,6 +33,9 @@ class LoadTableOperator(BaseOperator):
         filter_bisq = self.query_format.format(date_column="trade_date", start=self.start * 1000, end=self.end * 1000)
         filter_paxful = self.query_format.format(date_column="date", start=self.start, end=self.end)
 
+        if type(self.sql_query) == str:
+            self.sql_query = [self.sql_query]
+
         queries = [
             q.replace('[filter_bisq]', filter_bisq).replace('[filter_paxful]', filter_paxful)
             if '[filter' in q else q for q in self.sql_query]
