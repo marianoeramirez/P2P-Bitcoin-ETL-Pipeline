@@ -36,7 +36,7 @@ class DataQualityOperator(BaseOperator):
         self.start = datetime.strptime(context["ds"], "%Y-%m-%d")
         self.end = datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)
         filter_query = self.query_format.format(start=self.start.strftime("%Y-%m-%d"), end=self.end.strftime("%Y-%m-%d"))
-
+        self.log.info(f"Filter query {filter_query}")
         remote_providers = ["bisq", "paxful"]
         total = 0
         for provider in remote_providers:
