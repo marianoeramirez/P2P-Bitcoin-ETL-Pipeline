@@ -97,7 +97,9 @@ run_quality_checks = DataQualityOperator(
 
 start_operator >> create_table >> [fetch_api_bisq, fetch_api_paxful]
 
-fetch_api_bisq >> [stage_paxful_to_redshift, stage_bisq_to_redshift] >> connection_operator
+fetch_api_bisq >> stage_bisq_to_redshift >> connection_operator
+
+fetch_api_bisq >> stage_paxful_to_redshift >> connection_operator
 
 connection_operator >> [load_currency_table, load_time_table] >> load_transaction_table
 load_transaction_table >> run_quality_checks >> finish_operator
