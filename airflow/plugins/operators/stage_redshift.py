@@ -32,14 +32,18 @@ class StageToRedshiftOperator(BaseOperator):
         base_copy_query = " COPY {} FROM '{}' ACCESS_KEY_ID '{}' SECRET_ACCESS_KEY '{}' region 'us-east-1' FORMAT AS json 'auto';"
 
         filename = f"{self.remote_provider}({context['ds']}).json"
+        total = aws_hook.read_key(filename, self.aws_bucket_name).count('\n')
 
-        s3_path = f"s3://{self.s3_bucket}/{filename}"
+        if total > 0:
+            s3_path = f"s3://{self.s3_bucket}/{filename}"
 
-        copy_query = base_copy_query.format(self.table_name, s3_path, credentials.access_key,
-                                            credentials.secret_key)
+            copy_query = base_copy_query.format(self.table_name, s3_path, credentials.access_key,
+                                                credentials.secret_key)
 
-        self.log.info(f"Running copy: {copy_query}")
-        redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
+            self.log.info(f"Running copy: {copy_query}")
+            redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
 
-        redshift_hook.run(copy_query)
-        self.log.info(f"Table {self.table_name} ready!")
+            redshift_hook.run(copy_query)
+            self.log.info(f"Table {self.table_name} ready!")
+        else:
+            self.log.info(f"Table {self.table_name} Empty!")
