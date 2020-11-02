@@ -2,9 +2,9 @@ class SqlQueries:
     create_table = ("""
     
 CREATE TABLE IF NOT EXISTS public.staging_bisq (
-	price decimal(16, 8),
-	amount decimal(16, 8),
-	volume decimal(16, 8),
+	price decimal(20,8),
+	amount decimal(20,8),
+	volume decimal(20,8),
 	payment_method varchar(100),
 	trade_date BIGINT,
 	market varchar(100)
@@ -13,15 +13,15 @@ CREATE TABLE IF NOT EXISTS public.staging_bisq (
 CREATE TABLE IF NOT EXISTS public.staging_paxful (
 	id BIGINT,
 	date BIGINT,
-	amount decimal(16, 8),
-	price decimal(16, 8),
+	amount decimal(20,8),
+	price decimal(20,8),
 	payment_method varchar(255),
 	payment_method_group varchar(255),
 	currency varchar(20),
 	type varchar(50),
 	advertiser_cc varchar(20),
 	user_cc varchar(20),
-	crypto_rate_usd decimal(16, 8),
+	crypto_rate_usd decimal(20,8),
 	crypto_code varchar(100)
 );
 
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS public.transaction (
 	id varchar(32) NOT NULL,
 	date timestamp NOT NULL,
 	provider int2,
-	price decimal(16, 8),
-	amount decimal(16, 8),
+	price decimal(20,8),
+	amount decimal(20,8),
 	payment_method varchar(255),
 	currency1 int2,
 	currency2 int2,
