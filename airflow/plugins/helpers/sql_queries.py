@@ -85,23 +85,28 @@ CREATE TABLE IF NOT EXISTS public.currency (
 
     """)
 
-    bisq_staging_currency_table_insert = """insert into staging_currency (name)
+    staging_currency_table_insert = """insert into staging_currency (name)
     SELECT
        distinct SPLIT_PART(sb.market,  '_', 1)
     from staging_bisq sb  where [filter]
     UNION
     SELECT
        distinct  SPLIT_PART(sb.market,  '_', 2)
-    from staging_bisq sb  where [filter];
+    from staging_bisq sb  where [filter]
+    UNION
+    SELECT sp.currency from staging_paxful sp
+    UNION
+    SELECT sp.crypto_code from staging_paxful sp;
+    ;
         """
 
-    bisq_currency_table_insert = """insert into currency (name)
+    currency_table_insert = """insert into currency (name)
     SELECT
        distinct LOWER(name)
     from staging_currency where LOWER(name) not in (select name from currency);
         """
 
-    bisq_transaction_table_insert = """insert into transaction (date, price, amount, payment_method, currency1, currency2, type, provider, id)
+    transaction_table_insert = """insert into transaction (date, price, amount, payment_method, currency1, currency2, type, provider, id)
 SELECT
     timestamp 'epoch' + sb.trade_date/1000 * interval '1 second' as date,
     sb.price, sb.amount, sb.payment_method, 
@@ -109,11 +114,26 @@ SELECT
      'na', 1 as provider, 
       md5(sb.trade_date || c2.id || c3.id || provider  ) id
 from staging_bisq sb join currency c2 on  SPLIT_PART(sb.market,  '_', 1) = c2.name
-join currency c3 on  SPLIT_PART(sb.market,  '_', 2) = c3.name;
+join currency c3 on  SPLIT_PART(sb.market,  '_', 2) = c3.name
+UNION
+SELECT
+    timestamp 'epoch' + "date"  * interval '1 second',
+    sp.price, sp.amount, sp.payment_method, 
+     c2.id as currency1, c3.id as currency2,
+     sp.type, 2 as provider, 
+      sp.id
+    from staging_paxful sp join currency c2 on  lower(sp.crypto_code) = c2.name
+join currency c3 on  lower(sp.currency) = c3.name;
+;
     """
 
-    bisq_time_table_insert = ("""insert into time
+    time_table_insert = ("""insert into time
         SELECT timestamp 'epoch' + trade_date/1000 * interval '1 second' as date, extract(hour from date), extract(day from date), extract(week from date), 
                extract(month from date), extract(year from date), extract(dayofweek from date)
-        FROM staging_bisq;
+        FROM staging_bisq
+        union
+        select  timestamp 'epoch' + "date"  * interval '1 second' as "trade_date", extract(hour from "trade_date"), extract(day from "trade_date"), extract(week from trade_date), 
+               extract(month from trade_date), extract(year from trade_date), extract(dayofweek from "trade_date")
+        FROM staging_paxful;
+        ;
     """)
