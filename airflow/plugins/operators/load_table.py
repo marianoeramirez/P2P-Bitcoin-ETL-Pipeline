@@ -36,7 +36,8 @@ class LoadTableOperator(BaseOperator):
         queries = [
             q.replace('[filter_bisq]', filter_bisq).replace('[filter_paxful]', filter_paxful)
             if '[filter' in q else q for q in self.sql_query]
-
+        self.log.info("Queries to run")
+        self.log.info(queries)
         if self.empty_table:
             self.log.info(f"Empty table {self.table_name}")
             queries.insert(0, f"TRUNCATE TABLE {self.table_name};")
