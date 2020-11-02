@@ -4,7 +4,7 @@ from airflow.utils.decorators import apply_defaults
 
 
 class CreateTableOperator(BaseOperator):
-    ui_color = '#F98866'
+    ui_color = '#3498db'
 
     @apply_defaults
     def __init__(self,

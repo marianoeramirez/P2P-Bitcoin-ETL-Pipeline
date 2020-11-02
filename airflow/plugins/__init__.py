@@ -9,6 +9,7 @@ class UdacityPlugin(AirflowPlugin):
     operators = [
         operators.FetchApiOperator,
         operators.DataQualityOperator,
+        operators.StageToRedshiftOperator,
         operators.CreateTableOperator
     ]
     helpers = [

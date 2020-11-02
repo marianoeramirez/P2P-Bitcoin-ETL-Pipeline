@@ -1,13 +1,13 @@
 class SqlQueries:
     create_table = ("""
-        
+    
 CREATE TABLE IF NOT EXISTS public.staging_bisq (
 	price decimal(16, 8),
 	amount decimal(16, 8),
 	volume decimal(16, 8),
 	payment_method varchar(100),
 	trade_date BIGINT,
-	market varchar(100),
+	market varchar(100)
 );
 
 CREATE TABLE IF NOT EXISTS public.staging_paxful (
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.staging_paxful (
 	advertiser_cc varchar(20),
 	user_cc varchar(20),
 	crypto_rate_usd decimal(16, 8),
-	crypto_code varchar(100),
+	crypto_code varchar(100)
 );
 
 CREATE TABLE IF NOT EXISTS public.transaction (
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.transaction (
 	payment_method varchar(255),
 	currency_id int,
 	crypto_id int,
-    type varchar(10)
+    type varchar(10),
 	CONSTRAINT transaction_pkey PRIMARY KEY (id)
 );
 
@@ -58,14 +58,10 @@ CREATE TABLE IF NOT EXISTS public.provider (
 CREATE TABLE IF NOT EXISTS public.currency (
 	id int4 NOT NULL,
 	name varchar(256),
-	CONSTRAINT provider_pkey PRIMARY KEY (id)
+	type varchar(255),
+	CONSTRAINT currency_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.crypto (
-	id int4 NOT NULL,
-	name varchar(256),
-	CONSTRAINT provider_pkey PRIMARY KEY (id)
-);
 
     """)
     songplay_table_insert = ("""

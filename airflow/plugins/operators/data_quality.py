@@ -6,7 +6,7 @@ from airflow.utils.decorators import apply_defaults
 
 
 class DataQualityOperator(BaseOperator):
-    ui_color = '#89DA59'
+    ui_color = '#e67e22'
 
     @apply_defaults
     def __init__(self,
