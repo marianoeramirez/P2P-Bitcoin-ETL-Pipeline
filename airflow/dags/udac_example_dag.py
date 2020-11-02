@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators import (CreateTableOperator, FetchApiOperator, StageToRedshiftOperator)
+from airflow.operators import (CreateTableOperator, FetchApiOperator, StageToRedshiftOperator,
+                               DataQualityOperator, LoadTableOperator)
 from airflow.operators.dummy_operator import DummyOperator
 
 from helpers import SqlQueries
@@ -62,9 +63,47 @@ stage_bisq_to_redshift = StageToRedshiftOperator(
     provide_context=True
 )
 
+bisq_load_currency_table = LoadTableOperator(
+    task_id='bisq_load_currency_table',
+    dag=dag,
+    conn_id="redshift",
+    sql_query=[SqlQueries.bisq_staging_currency_table_insert, SqlQueries.bisq_currency_table_insert],
+    empty_table=True,
+    table_name="staging_currency",
+    date_column="trade_date"
+)
+
+bisq_load_time_table = LoadTableOperator(
+    task_id='bisq_load_time_table',
+    dag=dag,
+    conn_id="redshift",
+    sql_query=SqlQueries.bisq_time_table_insert,
+    table_name="time",
+)
+
+bisq_load_transaction_table = LoadTableOperator(
+    task_id='bisq_load_transaction_table',
+    dag=dag,
+    conn_id="redshift",
+    sql_query=SqlQueries.bisq_transaction_table_insert,
+    table_name="transaction",
+)
+
+
+bisq_run_quality_checks = DataQualityOperator(
+    task_id='bisq_run_quality_checks',
+    dag=dag,
+    conn_id="redshift",
+)
+
+
+
 start_operator >> create_table >> [fetch_api_bisq, fetch_api_paxful]
 
-fetch_api_bisq >> stage_bisq_to_redshift
+fetch_api_bisq >> stage_bisq_to_redshift >> [bisq_load_currency_table, bisq_load_time_table]
+[bisq_load_currency_table, bisq_load_time_table] >> bisq_load_transaction_table
+bisq_load_transaction_table >> bisq_run_quality_checks
+
 fetch_api_paxful >> stage_paxful_to_redshift
 
-[stage_bisq_to_redshift, stage_paxful_to_redshift] >> finish_operator
+[bisq_run_quality_checks, stage_paxful_to_redshift] >> finish_operator

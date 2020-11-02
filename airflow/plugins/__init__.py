@@ -10,7 +10,8 @@ class UdacityPlugin(AirflowPlugin):
         operators.FetchApiOperator,
         operators.DataQualityOperator,
         operators.StageToRedshiftOperator,
-        operators.CreateTableOperator
+        operators.CreateTableOperator,
+        operators.LoadTableOperator
     ]
     helpers = [
         helpers.SqlQueries

@@ -28,15 +28,28 @@ CREATE TABLE IF NOT EXISTS public.staging_paxful (
 CREATE TABLE IF NOT EXISTS public.transaction (
 	id varchar(32) NOT NULL,
 	date timestamp NOT NULL,
+	provider int2,
 	price decimal(16, 8),
 	amount decimal(16, 8),
 	payment_method varchar(255),
-	currency_id int,
-	crypto_id int,
+	currency1 int2,
+	currency2 int2,
     type varchar(10),
 	CONSTRAINT transaction_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE IF NOT EXISTS public.staging_currency (
+	id int4 NOT null IDENTITY(0,1),
+	name varchar(256),
+	CONSTRAINT currency_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.currency (
+	id int4 NOT null IDENTITY(0,1),
+	name varchar(256),
+	type varchar(255),
+	CONSTRAINT currency_pkey PRIMARY KEY (id)
+);
 
 CREATE TABLE IF NOT EXISTS public."time" (
 	date timestamp NOT NULL,
@@ -55,6 +68,14 @@ CREATE TABLE IF NOT EXISTS public.provider (
 	CONSTRAINT provider_pkey PRIMARY KEY (id)
 );
 
+truncate table provider;
+
+INSERT INTO public.provider
+(id, "name")
+VALUES(1, 'bisq'), (2,'paxful');
+
+
+
 CREATE TABLE IF NOT EXISTS public.currency (
 	id int4 NOT NULL,
 	name varchar(256),
@@ -62,46 +83,36 @@ CREATE TABLE IF NOT EXISTS public.currency (
 	CONSTRAINT currency_pkey PRIMARY KEY (id)
 );
 
-
-    """)
-    songplay_table_insert = ("""
-        SELECT
-                md5(events.sessionid || events.start_time) songplay_id,
-                events.start_time, 
-                events.userid, 
-                events.level, 
-                songs.song_id, 
-                songs.artist_id, 
-                events.sessionid, 
-                events.location, 
-                events.useragent
-                FROM (SELECT TIMESTAMP 'epoch' + ts/1000 * interval '1 second' AS start_time, *
-            FROM staging_events
-            WHERE page='NextSong') events
-            LEFT JOIN staging_songs songs
-            ON events.song = songs.title
-                AND events.artist = songs.artist_name
-                AND events.length = songs.duration
     """)
 
-    user_table_insert = ("""
-        SELECT distinct userid, firstname, lastname, gender, level
-        FROM staging_events
-        WHERE page='NextSong'
-    """)
+    bisq_staging_currency_table_insert = """insert into staging_currency (name)
+    SELECT
+       distinct SPLIT_PART(sb.market,  '_', 1)
+    from staging_bisq sb union where [filter]
+    SELECT
+       distinct  SPLIT_PART(sb.market,  '_', 2)
+    from staging_bisq sb  where [filter];
+        """
 
-    song_table_insert = ("""
-        SELECT distinct song_id, title, artist_id, year, duration
-        FROM staging_songs
-    """)
+    bisq_currency_table_insert = """insert into currency (name)
+    SELECT
+       distinct LOWER(name)
+    from staging_currency where LOWER(name) not in (select name from currency);
+        """
 
-    artist_table_insert = ("""
-        SELECT distinct artist_id, artist_name, artist_location, artist_latitude, artist_longitude
-        FROM staging_songs
-    """)
+    bisq_transaction_table_insert = """insert into transaction (date, price, amount, payment_method, currency1, currency2, type, provider, id)
+SELECT
+    timestamp 'epoch' + sb.trade_date/1000 * interval '1 second' as date,
+    sb.price, sb.amount, sb.payment_method, 
+     c2.id as currency1, c3.id as currency2,
+     'na', 1 as provider, 
+      md5(sb.trade_date || c2.id || c3.id || provider  ) id
+from staging_bisq sb join currency c2 on  SPLIT_PART(sb.market,  '_', 1) = c2.name
+join currency c3 on  SPLIT_PART(sb.market,  '_', 2) = c3.name;
+    """
 
-    time_table_insert = ("""
-        SELECT start_time, extract(hour from start_time), extract(day from start_time), extract(week from start_time), 
-               extract(month from start_time), extract(year from start_time), extract(dayofweek from start_time)
-        FROM songplays
+    bisq_time_table_insert = ("""insert into time
+        SELECT timestamp 'epoch' + trade_date/1000 * interval '1 second' as date, extract(hour from date), extract(day from date), extract(week from date), 
+               extract(month from date), extract(year from date), extract(dayofweek from date)
+        FROM staging_bisq;
     """)

@@ -33,6 +33,7 @@ class DataQualityOperator(BaseOperator):
                 failted_tests.append(f"SELECT count(*) FROM {table};")
             else:
                 self.log.info(f"Data quality Passed on table : {table}!!!")
+
         if len(failted_tests) > 0:
             self.log.info(failted_tests)
             raise ValueError('Data quality check failed')
