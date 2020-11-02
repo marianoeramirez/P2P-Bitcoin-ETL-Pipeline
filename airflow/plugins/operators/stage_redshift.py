@@ -32,7 +32,7 @@ class StageToRedshiftOperator(BaseOperator):
 
         hook = S3_hook.S3Hook(self.aws_credential_id)
         credentials = hook.get_credentials()
-        total = hook.read_key(filename, self.s3_bucket).count('\n')
+        total = hook.read_key(filename, self.s3_bucket).strip().count('\n')
 
         if total > 0:
             s3_path = f"s3://{self.s3_bucket}/{filename}"
