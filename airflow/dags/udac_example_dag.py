@@ -31,6 +31,7 @@ dag = DAG('udac_example_dag',
           )
 
 start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
+connection_operator = DummyOperator(task_id='connection_operator', dag=dag)
 finish_operator = DummyOperator(task_id='finish_execution', dag=dag)
 
 fetch_api_bisq = FetchApiOperator(task_id="fetch_api_bisq", dag=dag, aws_con=aws_credentials,
@@ -96,6 +97,7 @@ run_quality_checks = DataQualityOperator(
 
 start_operator >> create_table >> [fetch_api_bisq, fetch_api_paxful]
 
-fetch_api_bisq >> [stage_paxful_to_redshift, stage_bisq_to_redshift] >> [load_currency_table, load_time_table]
-[load_currency_table, load_time_table] >> load_transaction_table
+fetch_api_bisq >> [stage_paxful_to_redshift, stage_bisq_to_redshift] >> connection_operator
+
+connection_operator >> [load_currency_table, load_time_table] >> load_transaction_table
 load_transaction_table >> run_quality_checks >> finish_operator
