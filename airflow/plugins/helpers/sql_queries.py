@@ -120,11 +120,9 @@ SELECT
     timestamp 'epoch' + "date"  * interval '1 second',
     sp.price, sp.amount, sp.payment_method, 
      c2.id as currency1, c3.id as currency2,
-     sp.type, 2 as provider, 
-      sp.id
+     sp.type, 2 as provider, cast(sp.id as varchar)
     from staging_paxful sp join currency c2 on  lower(sp.crypto_code) = c2.name
 join currency c3 on  lower(sp.currency) = c3.name  where [filter_paxful];
-;
     """
 
     time_table_insert = ("""insert into time
