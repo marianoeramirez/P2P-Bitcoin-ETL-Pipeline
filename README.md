@@ -4,11 +4,25 @@
 Data is captured for historical analysis from the APIs of the P2Ps providers using the requests Python library. 
 The data collected from the API is stored on the AWS S3 bucket. ETL jobs are written in python and scheduled in airflow to run every day.
 
-
 <p float="left">
     <img src="https://github.com/marianoeramirez/P2P-Bitcoin-ETL-Pipeline/blob/main/docs/images/bisq-logo.svg" align="center" width="100">
     <img src="https://github.com/marianoeramirez/P2P-Bitcoin-ETL-Pipeline/blob/main/docs/images/paxful.svg" align="center"  width="100">
 </p>
+
+### Paxful 
+
+ Paxful is a P2P platform that has seen significant growth since inception. In 2015, the platform reported 
+ $5.9M in USD trade volume which has steadily increased by 25% or more year over year. 
+ At the close of 2017, they reported more than $500M in USD trade volume, with 2019 tripling that number closing at 
+ more than $1.6B. In addition, they have seen 1 million wallets added in the past year, which is a vast difference 
+ from the 97K opened in 2015. Recently, Paxful reported having more than 3 million wallets registered on the platform.
+ 
+### Bisq
+
+Bisq is a P2P platform that is an open-source, peer-to-peer application that allows buy and sell cryptocurrencies in 
+exchange for national currencies. In number Bisq is working from 2018 and have 70.000 + trades accomplished until now.  
+
+
 
 ## Architecture 
 ![Pipeline Architecture](docs/images/architecture.png)
@@ -31,6 +45,23 @@ Pipeline Consists of various modules:
 
 ![Pipeline Architecture](docs/images/airflow-dag.png)
 
+
+## Data model
+
+![Pipeline Architecture](docs/images/schema.png)
+
+### Production Schema
+
+- provider: static database with the diferent providers 
+- currency: list of currencies on the tables
+- transaction: list of transactions that comes fron the API
+- time: dimensional table to store the information of time
+
+### Staging Schema 
+
+- staging_currency: Currency table used to avoid the duplication of currencies in the dimensional table.
+- staging_bisq: raw data from the bisq API
+- staging_paxful: raw data from the paxful API
 
 ## Scenarios
 
