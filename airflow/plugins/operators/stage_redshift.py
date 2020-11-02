@@ -1,4 +1,4 @@
-from airflow.contrib.hooks.aws_hook import AwsHook
+from airflow.hooks import S3_hook
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -26,13 +26,13 @@ class StageToRedshiftOperator(BaseOperator):
         self.execution_date = kwargs.get('execution_date')
 
     def execute(self, context):
-        aws_hook = AwsHook(self.aws_credential_id)
-        credentials = aws_hook.get_credentials()
-
         base_copy_query = " COPY {} FROM '{}' ACCESS_KEY_ID '{}' SECRET_ACCESS_KEY '{}' region 'us-east-1' FORMAT AS json 'auto';"
 
         filename = f"{self.remote_provider}({context['ds']}).json"
-        total = aws_hook.read_key(filename, self.aws_bucket_name).count('\n')
+
+        hook = S3_hook.S3Hook(self.aws_credential_id)
+        credentials = hook.get_credentials()
+        total = hook.read_key(filename, self.s3_bucket).count('\n')
 
         if total > 0:
             s3_path = f"s3://{self.s3_bucket}/{filename}"
