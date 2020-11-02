@@ -16,7 +16,6 @@ class LoadTableOperator(BaseOperator):
                  conn_id: str = "",
                  sql_query: Union[str, list] = "",
                  empty_table: bool = False,
-                 date_column: Optional[str] = None,
                  table_name: str = "",
                  *args, **kwargs):
         super(LoadTableOperator, self).__init__(*args, **kwargs)
@@ -24,20 +23,19 @@ class LoadTableOperator(BaseOperator):
         self.sql_query = sql_query
         self.table_name = table_name
         self.empty_table = empty_table
-        self.date_column = date_column
 
     def execute(self, context):
         redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
         self.start = int(datetime.strptime(context["ds"], "%Y-%m-%d").timestamp())
-        self.end = int((datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)).timestamp())
+        self.end = int((datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)).timestamp()) * 1000
 
-        if self.date_column:
-            self.log.info(f"Filter by {self.date_column}")
-            filter_query = self.query_format.format(date_column=self.date_column, start=self.start, end=self.end)
+        self.log.info(f"Filter by")
+        filter_bisq = self.query_format.format(date_column="trade_date", start=self.start * 1000, end=self.end * 1000)
+        filter_paxful = self.query_format.format(date_column="date", start=self.start, end=self.end)
 
-            queries = [q.replace('[filter]', filter_query) if '[filter]' in q else q for q in self.sql_query]
-        else:
-            queries = self.sql_query
+        queries = [
+            q.replace('[filter_bisq]', filter_bisq).replace('[filter_paxful]', filter_paxful)
+            if '[filter' in q else q for q in self.sql_query]
 
         if self.empty_table:
             self.log.info(f"Empty table {self.table_name}")

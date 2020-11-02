@@ -70,7 +70,6 @@ load_currency_table = LoadTableOperator(
     sql_query=[SqlQueries.staging_currency_table_insert, SqlQueries.currency_table_insert],
     empty_table=True,
     table_name="staging_currency",
-    date_column="trade_date"
 )
 
 load_time_table = LoadTableOperator(
