@@ -33,8 +33,7 @@ class LoadTableOperator(BaseOperator):
 
         if self.date_column:
             self.log.info(f"Filter by {self.date_column}")
-            filter_query = self.query_format.format(
-                {"date_column": self.date_column, "start": self.start, "end": self.end})
+            filter_query = self.query_format.format(date_column=self.date_column, start=self.start, end=self.end)
 
             queries = [q.replace('[filter]', filter_query) if '[filter]' in q else q for q in self.sql_query]
         else:
