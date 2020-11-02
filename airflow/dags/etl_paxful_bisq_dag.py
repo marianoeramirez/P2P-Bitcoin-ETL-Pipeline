@@ -16,15 +16,15 @@ aws_credentials = "aws_con"
 default_args = {
     'owner': 'udacity',
     'depends_on_past': True,
-    'start_date': datetime(2020, 10, 20),
-    'email_on_failure': False,
+    'start_date': datetime(2019, 1, 1),
+    'email_on_failure': True,
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
     'catchup': True
 }
 
-dag = DAG('udac_example_dag',
+dag = DAG('etl_paxful_bisq_dag',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
           schedule_interval='0 0 * * *'
