@@ -14,7 +14,7 @@ class DataQualityOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id: str = "",
+                 conn_id: str = "",
                  aws_con: str = "",
                  aws_bucket_name: str = "",
                  tables: Optional[dict] = None,
@@ -24,14 +24,14 @@ class DataQualityOperator(BaseOperator):
         super(DataQualityOperator, self).__init__(*args, **kwargs)
         if tables is None:
             tables = dict()
-        self.redshift_conn_id = redshift_conn_id
+        self.conn_id = conn_id
         self.tables = tables
         self.tables_with_rows = tables_with_rows
         self.aws_bucket_name = aws_bucket_name
         self.aws_con = aws_con
 
     def execute(self, context):
-        redshift_hook = PostgresHook(postgres_conn_id=self.redshift_conn_id)
+        redshift_hook = PostgresHook(postgres_conn_id=self.conn_id)
 
         self.start = datetime.strptime(context["ds"], "%Y-%m-%d")
         self.end = datetime.strptime(context["ds"], "%Y-%m-%d") + timedelta(days=1)
