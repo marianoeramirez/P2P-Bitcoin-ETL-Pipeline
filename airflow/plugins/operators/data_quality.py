@@ -57,7 +57,7 @@ class DataQualityOperator(BaseOperator):
 
         for table in self.tables_with_rows:
             self.log.info(f"Starting data quality on table : {table}")
-            records = redshift_hook.get_records(f"SELECT count(*) FROM {table};")
+            records = redshift_hook.get_records(f"SELECT count(*) FROM {table} where {filter_query};")
 
             if len(records) < 1 or records[0][0] < 1:
                 self.log.error(f"Data quality failed for table : {table}. count {records[0][0]}, total file:{total}")

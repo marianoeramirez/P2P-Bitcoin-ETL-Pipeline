@@ -27,7 +27,7 @@ default_args = {
 dag = DAG('udac_example_dag',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
-          schedule_interval='0 * * * *'
+          schedule_interval='0 0 * * *'
           )
 
 start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
@@ -94,7 +94,7 @@ run_quality_checks = DataQualityOperator(
     dag=dag,
     conn_id="redshift",
     tables=["transaction"],
-    tables_with_rows=["currency", "time", ],
+    tables_with_rows=["time"],
     aws_con=aws_credentials, aws_bucket_name=s3_bucket
 )
 
