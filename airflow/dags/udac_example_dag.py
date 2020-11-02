@@ -93,6 +93,8 @@ run_quality_checks = DataQualityOperator(
     task_id='run_quality_checks',
     dag=dag,
     conn_id="redshift",
+    tables=["transaction"],
+    tables_with_rows=["currency", "time", ]
 )
 
 start_operator >> create_table >> [fetch_api_bisq, fetch_api_paxful]
