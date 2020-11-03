@@ -5,6 +5,10 @@ from airflow.utils.decorators import apply_defaults
 
 
 class StageToRedshiftOperator(BaseOperator):
+    """
+    This operator load the information from the raw JSON data on S3 bucket to the redshift table.
+    """
+
     ui_color = '#2ecc71'
 
     @apply_defaults
@@ -26,6 +30,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.execution_date = kwargs.get('execution_date')
 
     def execute(self, context):
+
         base_copy_query = " COPY {} FROM '{}' ACCESS_KEY_ID '{}' SECRET_ACCESS_KEY '{}' region 'us-east-1' FORMAT AS json 'auto';"
 
         filename = f"{self.remote_provider}({context['ds']}).json"

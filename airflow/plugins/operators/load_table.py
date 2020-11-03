@@ -8,6 +8,10 @@ from airflow.utils.decorators import apply_defaults
 
 
 class LoadTableOperator(BaseOperator):
+    """
+    This oeprator load the information from staging tables to the production tables.
+    """
+
     ui_color = '#80BD9E'
     query_format = "{date_column} > {start} and {date_column} < {end} "
 

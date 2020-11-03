@@ -7,6 +7,9 @@ from airflow.utils.decorators import apply_defaults
 
 
 class FetchApiOperator(BaseOperator):
+    """
+    This operator fetch the API from the providers and load the information to S3 bucket.
+    """
     ui_color = '#F98866'
 
     @apply_defaults
@@ -29,6 +32,7 @@ class FetchApiOperator(BaseOperator):
         filename = f"{self.remote_provider}({context['ds']}).json"
         hook = S3_hook.S3Hook(self.aws_con)
 
+        # if the file for this day already exists, we dont fetch again the API
         if not hook.check_for_key(filename, self.aws_bucket_name):
             self.log.info(f"File not exists")
             self.fetch_url()
@@ -41,6 +45,15 @@ class FetchApiOperator(BaseOperator):
             self.log.info(f"File already exists")
 
     def fetch_url(self, count=0):
+        """
+        This is a recursive function that call himself if the number of results from the API are the maximum
+        number of results from the API. this result is added to a attribute of the class to store all the data
+        information.
+
+        param: count its for store the number of the page been called.
+        class attribute: start is the minimun date to be queried with the API, and like this APIs dont have pagination,
+                         we use this attribute to store the maximum date of the current output.
+        """
         url = None
         pagination = 0
         self.log.info(f"Start: {self.start}, End: {self.end}")

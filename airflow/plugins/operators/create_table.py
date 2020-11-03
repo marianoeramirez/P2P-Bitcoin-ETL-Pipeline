@@ -4,6 +4,9 @@ from airflow.utils.decorators import apply_defaults
 
 
 class CreateTableOperator(BaseOperator):
+    """
+    This operator execute a simple query to create a database.
+    """
     ui_color = '#3498db'
 
     @apply_defaults
