@@ -45,23 +45,116 @@ Pipeline Consists of various modules:
 
 ![Pipeline Architecture](docs/images/airflow-dag.png)
 
+## Running the project
+
+### Hardware Used
+For installation and run the project you have to use:
+- Use a ec2 instance with a minimum 2 cpu and 4gb ram to run the Airflow instance
+- For Redshift use minimum a 2 Node cluster with Instance Types dc2.large
+
+### Setting Up Airflow
+
+For a development enviroment you can follow this guide for setup and configure the instance with this 
+[Guide](https://medium.com/@abraham.pabbathi/airflow-on-aws-ec2-instance-with-ubuntu-aff8d3206171)
+
+### Setting up Redshift
+You can follow the AWS [ Guide](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-launch-sample-cluster.html) 
+to run a Redshift cluster.
+
+### Setting up S3
+You can follow the AWS [ Guide](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) 
+to create a bucket.
+
+### How to run 
+Make sure Airflow webserver and scheduler is running. 
+Open the Airflow UI `http://< ec2-instance-ip >:< configured-port >` 
+
+In admin -> connections please configure the follow:
+- aws_con: with the credential to enter with AWS and upload the information
+- redshift: with the information for the connection of the Redshift cluster
 
 ## Data model
 
+The goal of this project is do analytical queries over the information of the different providers to understand 
+how the market works, and be able to get some insights like:
+
+- When the users buy or sell more in the day
+- What is the behavior of each day to now what are the days with more movement
+
+With this purpose i choose a star schema where the center of the information is the transaction table, and aditionally 
+to this the project have some dimensions tables like provider, currency and time, to help with the organization of the
+data and do better analytical query.
+
 ![Pipeline Architecture](docs/images/schema.png)
+
+### Example queries:
+
+-  Select when the users buy or sell more in the day
+
+```
+SELECT avg(amount), time."hour", type FROM "transaction" t join time on time."date" = t.date where currency1 = 5 or currency2 =5 group by "type", "hour" order by avg ;
+```
+
+- Select the behavior of each day to now what are the days with more movement
+
+```
+SELECT sum(amount), time.weekday FROM "transaction" t join time on time."date" = t.date where currency1 = 5 or currency2 =5 group by "weekday" order by avg desc ;
+```
+
 
 ### Production Schema
 
+- transaction: list of transactions that comes from the APIs
+    - id: id of the transaction to represent a unique value
+    - date: timestamp with the date of the transaction
+    - provider: The id that identify the provider of the transaction
+    - price: decimal value that store the amount paid for this account of cryptocurrency
+    - amount: decimal value that store amount interchanged
+    - paymenth_method: this is the name of the payment method that comes from the P2P provider
+    - currency1: is the id of the first currency that come from a different table
+    - currency2: is the id of the second currency involved on the transaction
+    - type: type of transaction, it could be "sell", "buy", or "na"
 - provider: static database with the diferent providers 
+    - id: the primary key to represent a unique value
+    - name: the name of the provider
 - currency: list of currencies on the tables
-- transaction: list of transactions that comes fron the API
+    - id: the primary key to represent a unique value
+    - name: the name of the currency
+    - type: additional column that should be manual filled to represent if the currency is "flat" or "crypto" 
 - time: dimensional table to store the information of time
+    - date: timestamp of the current row
+    - hour: integer number with the hour
+    - day: integer number with the day
+    - week: integer number with the week
+    - month: integer number with the month
+    - year: integer number with the year
+    - weekday: integer number with the day of the week
 
 ### Staging Schema 
 
 - staging_currency: Currency table used to avoid the duplication of currencies in the dimensional table.
+    - id: the primary key to represent a unique value
+    - name: the name of the currency that will going to be imported
 - staging_bisq: raw data from the bisq API
+    - price: price of the coin
+    - amount: amount interchanged in this transaction
+    - volume: amount of crypto that was interchanged historical
+    - payment_method: payment method used for pay for this transaction
+    - trade_date: integer with the datetime of the transaction
+    - market: market where the transaction was made, example: "btc_usd"
 - staging_paxful: raw data from the paxful API
+    - id: id that come from the paxful API
+    - date: integer with the datetime of the transaction 
+    - amount: amount interchanged 
+    - price: price paid for but the coin
+    - paymenth_method: paymenth method for this transaction
+    - paymenth_method_group: paymenth method group
+    - currency: indicates the currency of the transaction
+    - type: indicates buy or sell trade
+    - advertiser_cc: Not specified on the documentation
+    - user_cc: Not specified on the documentation
+    - crypto_rate_usd: Not specified on the documentation
+    - crypto_code: indicate the crypto currency interchanged
 
 ## Scenarios
 
@@ -76,7 +169,8 @@ Pipeline Consists of various modules:
     -   Data quality operators are used at appropriate position. In case of DAG failures email triggers can be configured to let the team know about pipeline failures.
     
 -   Make it available to 100+ people
-    -   We can set the concurrency limit for your Amazon Redshift cluster. While the concurrency limit is 50 parallel queries for a single period of time, this is on a per cluster basis, meaning you can launch as many clusters as fit for you business.
+    -   The more people accessing the database the more CPU resources you need to get a fast experience. By using a 
+    distributed database you can improve your replications and partitioning to get faster query results for each user.
     
 ## Documentation of the APIS
 
